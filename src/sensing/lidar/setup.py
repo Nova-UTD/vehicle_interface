@@ -2,7 +2,7 @@ from setuptools import setup
 from glob import glob
 import os
 
-package_name = 'sensor_processing'
+package_name = 'lidar'
 
 setup(
     name=package_name,
@@ -23,8 +23,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'dual_lidar_processing_node = sensor_processing.dual_lidar_processing_node:main',
-            'delphi_esr_radar_processing_node = sensor_processing.delphi_esr_radar_processing_node:main',
+            'dual_lidar_processing_node = lidar.dual_lidar_processing_node:main',
         ],
     },
 )

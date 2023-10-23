@@ -19,7 +19,6 @@ from scipy.spatial.transform import Rotation as R
 from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import OccupancyGrid
 from delphi_esr_msgs.msg import EsrTrack, EsrTrackMotionPowerTrack, EsrTrackMotionPowerGroup
-from derived_object_msgs.msg import ObjectWithCovarianceArray, ObjectWithCovariance
 from nova_msgs.msg import RadarSpotlight
 from visualization_msgs.msg import Marker, MarkerArray
 from builtin_interfaces.msg import Duration
@@ -50,9 +49,6 @@ class DelphiESRRadarProcessingNode(Node):
         self.clock_msg = Clock()
 
         self.f = open("radar_log_reflector.txt", "w")
-
-        # self.objects_sub = self.create_subscription(
-        #     ObjectWithCovarianceArray, '/radar_1/objects', self.objectsCb, 10)
         
         self.track_sub = self.create_subscription(
             EsrTrack, '/radar_1/esr_track', self.trackCb, 10)
@@ -85,15 +81,6 @@ class DelphiESRRadarProcessingNode(Node):
     def clockCb(self, msg: Clock):
         self.clock = msg.clock.sec + msg.clock.nanosec * 1e-9
         self.clock_msg = msg
-
-    def objectsCb(self, msg: ObjectWithCovarianceArray):
-        for obj in msg.objects:
-            if obj.classification > 0:
-                self.get_logger().info('%i: class: %s [%1.0f] age: %i' % (obj.id,self.classifications[obj.classification],float(obj.classification_certainty)/255.0*100.0,obj.classification_age))
-                self.get_logger().info('PolyPts: %i, ShapeType: %s' % (len(obj.polygon.points),self.shape_types[obj.shape.type]))
-            #self.get_logger().info('%1.2f, %1.2f, %1.2f' % (obj.shape.dimensions[0],obj.shape.dimensions[1],obj.shape.dimensions[2]))
-        #self.get_logger().info('=========================')
-        return
 
     def motionCb(self, msg: EsrTrackMotionPowerGroup):
         for track in msg.tracks:

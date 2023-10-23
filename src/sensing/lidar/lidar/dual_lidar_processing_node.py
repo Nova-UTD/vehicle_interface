@@ -1,5 +1,5 @@
 '''
-Package: sensor_processing
+Package: lidar
    File: dual_lidar_processing_node.py
  Author: Will Heitman (w at heit dot mn)
 

@@ -12,14 +12,18 @@ from launch_ros.actions import Node
 
 from ament_index_python import get_package_share_directory
 
-sys.path.append(path.abspath('/navigator/'))
+sys.path.append(path.abspath('/vehicle_interface/'))
 from launch_node_definitions import *
 
 def generate_launch_description():
 
     return LaunchDescription([
-        clock,
-        radar_processor,
+
+        # clock,
         hailbopp_urdf_publisher,
+
+        # SENSOR INTERFACE
+        radar_processor,
+        
         rviz,
     ])

@@ -9,7 +9,7 @@ import rclpy
 import serial
 
 # Message definitions
-from carla_msgs.msg import CarlaSpeedometer
+from navigator_msgs.msg import CarlaSpeedometer  # need to change this to: from navigator_msgs.mgs import Speed
 from diagnostic_msgs.msg import DiagnosticStatus, KeyValue
 from geometry_msgs.msg import Quaternion, TransformStamped, Vector3
 from nav_msgs.msg import Odometry

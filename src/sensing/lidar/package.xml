@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>sensor_processing</name>
+  <name>lidar</name>
   <version>1.0.0</version>
-  <description>Nodes for processing sensor data: camera images, LiDAR pointclouds, and more.</description>
-  <maintainer email="project.nova@utdallas.edu">Will Heitman</maintainer>
+  <description>Nodes for processing LiDAR pointclouds.</description>
+  <maintainer email="project.nova@utdallas.edu">Nova</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -17,5 +17,4 @@
   </export>
 
   <depend>nav_msgs</depend>
-  <depend>delphi_esr_msgs</depend>
 </package>
