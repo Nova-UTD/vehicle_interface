@@ -4,6 +4,8 @@ FROM ros:humble
 # This variable tells future scripts that user input isn't available during the Docker build.
 ENV DEBIAN_FRONTEND noninteractive
 
+LABEL maintainer="Nova"
+
 # apt-get & apt installs
 # Also need to upgrade the apt packages, otherwise there are incompatibilities running ros2/rviz2
 RUN apt-get update && apt update && apt upgrade -y && \

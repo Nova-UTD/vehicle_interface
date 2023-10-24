@@ -4,6 +4,8 @@ FROM ros:noetic
 # This variable tells future scripts that user input isn't available during the Docker build.
 ENV DEBIAN_FRONTEND noninteractive
 
+LABEL maintainer="Nova"
+
 # Comment this line because we want to grab the delphi esr msgs ourselves
 # get drivers for Delphi ESR Radar
 # see: https://autonomoustuff.atlassian.net/wiki/spaces/RW/pages/17475947/Driver+Pack+Installation+or+Upgrade+Instructions

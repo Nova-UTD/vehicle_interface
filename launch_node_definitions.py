@@ -2,13 +2,20 @@ from os import name, path, environ
 
 from pathlib import Path
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, RegisterEventHandler, EmitEvent, LogInfo
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import ExecuteProcess
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+
+import launch
+import lifecycle_msgs.msg
+from launch_ros.actions import LifecycleNode
+from launch.events import matches_action
+from launch_ros.events.lifecycle import ChangeState
+from launch_ros.event_handlers import OnStateTransition
 
 from ament_index_python import get_package_share_directory
 
@@ -63,29 +70,56 @@ joystick_microsoft = Node(
     ]
 )
 
-# os-991234567890.local
-ouster_ros_pkg_dir = get_package_share_directory('ouster_ros')
-# use the community_driver_config.yaml by default
-default_params_file = Path(ouster_ros_pkg_dir) / 'config' / 'community_driver_config.yaml'
-params_file = LaunchConfiguration('params_file')
-params_file_arg = DeclareLaunchArgument('params_file',
-                                        default_value=str(
-                                            default_params_file),
-                                        description='name or path to the parameters file to use.')
+# OUSTER ######################################################################
+lidar_ouster_driver = LifecycleNode(
+        package='ouster_ros',
+        executable='os_driver',
+        name='os_driver',
+        namespace='ouster',
+        parameters=['/vehicle_interface/data/lidar/ouster_params.yaml'],
+        output='screen',
+    )
 
-driver_launch_file_path = Path(ouster_ros_pkg_dir) / 'launch' / 'driver.launch.py'
-lidar_ouster_driver = IncludeLaunchDescription(
-    PythonLaunchDescriptionSource([str(driver_launch_file_path)]),
-    launch_arguments={
-        'params_file': params_file,
-        'ouster_ns': '',
-        'os_driver_name': 'ouster_driver',
-        'viz': 'True',
-        'rviz_config': './install/ouster_ros/share/ouster_ros/config/community_driver.rviz'
-    }.items()
+sensor_configure_event = EmitEvent(
+    event=ChangeState(
+        lifecycle_node_matcher=matches_action(lidar_ouster_driver),
+        transition_id=lifecycle_msgs.msg.Transition.TRANSITION_CONFIGURE,
+    )
 )
 
-lidar_driver_right = Node(
+sensor_activate_event = RegisterEventHandler(
+    OnStateTransition(
+        target_lifecycle_node=lidar_ouster_driver, goal_state='inactive',
+        entities=[
+            LogInfo(msg="os_driver activating..."),
+            EmitEvent(event=ChangeState(
+                lifecycle_node_matcher=matches_action(lidar_ouster_driver),
+                transition_id=lifecycle_msgs.msg.Transition.TRANSITION_ACTIVATE,
+            )),
+        ],
+        handle_once=True
+    )
+)
+
+sensor_finalized_event = RegisterEventHandler(
+    OnStateTransition(
+        target_lifecycle_node=lidar_ouster_driver, goal_state='finalized',
+        entities=[
+            LogInfo(
+                msg="Failed to communicate with the sensor in a timely manner."),
+            EmitEvent(event=launch.events.Shutdown(
+                reason="Couldn't communicate with sensor"))
+        ],
+    )
+)
+###############################################################################
+
+lidar_ouster_processor = Node(
+    package='lidar',
+    executable='lidar_ouster_processing_node'
+)
+
+lidar_velodyne_driver_right = Node(
     package='velodyne_driver',
     executable='velodyne_driver_node',
     parameters=[
@@ -93,7 +127,7 @@ lidar_driver_right = Node(
     namespace='velo_right'
 )
 
-lidar_driver_left = Node(
+lidar_velodyne_driver_left = Node(
     package='velodyne_driver',
     executable='velodyne_driver_node',
     parameters=[
@@ -101,7 +135,7 @@ lidar_driver_left = Node(
     namespace='velo_left'
 )
 
-lidar_pointcloud_left = Node(
+lidar_velodyne_pointcloud_left = Node(
     package='velodyne_pointcloud',
     executable='velodyne_transform_node',
     parameters=[
@@ -109,7 +143,7 @@ lidar_pointcloud_left = Node(
     namespace='velo_left'
 )
 
-lidar_pointcloud_right = Node(
+lidar_velodyne_pointcloud_right = Node(
     package='velodyne_pointcloud',
     executable='velodyne_transform_node',
     parameters=[
@@ -117,13 +151,13 @@ lidar_pointcloud_right = Node(
     namespace='velo_right'
 )
 
-lidar_processor = Node(
-    package='sensor_processing',
+lidar_velodyne_processor = Node(
+    package='lidar',
     executable='dual_lidar_processing_node'
 )
 
 radar_processor = Node(
-    package='sensor_processing',
+    package='radar',
     executable='delphi_esr_radar_processing_node'
 )
 
