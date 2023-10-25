@@ -57,7 +57,7 @@ class LidarOusterProcessingNode(Node):
 
     def lidarCb(self, msg: PointCloud2):
         self.pcd_cached: np.array = rnp.numpify(msg)
-        self.pcd_cached = self.transformToBaseLink(self.pcd_cached, 'os_lidar')
+        self.pcd_cached = self.transformToBaseLink(self.pcd_cached, 'lidar_ouster')
 
         # merged_x = np.append(
         #     self.left_pcd_cached['x'], self.right_pcd_cached['x'])
@@ -116,9 +116,9 @@ class LidarOusterProcessingNode(Node):
         r: R = R.from_quat([quat.x, quat.y, quat.z, quat.w])
         xyz = r.apply(xyz)
 
-        pcd['x'] = xyz[:,0].reshape(-1,16)
-        pcd['y'] = xyz[:,1].reshape(-1,16)
-        pcd['z'] = xyz[:,2].reshape(-1,16)
+        pcd['x'] = xyz[:,0].reshape(-1,128)
+        pcd['y'] = xyz[:,1].reshape(-1,128)
+        pcd['z'] = xyz[:,2].reshape(-1,128)
 
         # Then translate
         pcd['x'] += t.transform.translation.x

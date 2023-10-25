@@ -23,14 +23,14 @@ def generate_launch_description():
         hailbopp_urdf_publisher,
 
         # SENSOR INTERFACE
-        camera,
-        gnss,
+        #camera,
+        #gnss,
         lidar_ouster_driver, sensor_configure_event, sensor_activate_event, sensor_finalized_event,
         lidar_ouster_processor,
         #lidar_velodyne_driver_left, lidar_velodyne_pointcloud_left,
         #lidar_velodyne_driver_right, lidar_velodyne_pointcloud_right,
         #lidar_velodyne_processor,
-        radar_processor,
+        #radar_processor,
 
         rviz,
     ])

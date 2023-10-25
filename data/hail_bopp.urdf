@@ -129,9 +129,11 @@
     <origin xyz="0.0 0.73 1.8" rpy="0.15 0.2 0.55"/>
   </joint>
 
+  <link name="lidar_ouster"/>
+
  <joint name="lidar_ouster_joint" type="fixed">
     <parent link="base_link"/>
-    <child link="os_lidar"/>
+    <child link="lidar_ouster"/>
     <origin xyz="0.0 0.68 1.8" rpy="0.15 0.2 0.55"/>
   </joint>
 
