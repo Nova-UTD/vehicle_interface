@@ -9,7 +9,7 @@ import rclpy
 import serial
 
 # Message definitions
-from navigator_msgs.msg import CarlaSpeedometer  # need to change this to: from navigator_msgs.mgs import Speed
+from navigator_msgs.msg import VehicleSpeed 
 from diagnostic_msgs.msg import DiagnosticStatus, KeyValue
 from geometry_msgs.msg import Quaternion, TransformStamped, Vector3
 from nav_msgs.msg import Odometry
@@ -60,7 +60,7 @@ class GnssInterfaceNode(Node):
         clock_sub = self.create_subscription(
             Clock, '/clock', self.clockCb, 10)
 
-        self.speed_pub = self.create_publisher(CarlaSpeedometer, '/speed', 1)
+        self.speed_pub = self.create_publisher(VehicleSpeed, '/speed', 1)
 
         self.status = DiagnosticStatus()
         self.status_pub = self.create_publisher(
@@ -154,7 +154,7 @@ class GnssInterfaceNode(Node):
                     if msg.spd_over_grnd_kmph is None:
                         return
                     self.speed = msg.spd_over_grnd_kmph * 0.277778
-                    speed_msg = CarlaSpeedometer()
+                    speed_msg = VehicleSpeed()
                     speed_msg.speed = self.speed
                     self.speed_pub.publish(speed_msg)
 

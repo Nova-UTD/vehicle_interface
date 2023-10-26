@@ -129,11 +129,12 @@
     <origin xyz="0.0 0.73 1.8" rpy="0.15 0.2 0.55"/>
   </joint>
 
-  <link name="lidar_ouster"/>
+  <!-- os_sensor tf tree is defined by ouster -->
+  <link name="os_sensor"/>
 
  <joint name="lidar_ouster_joint" type="fixed">
     <parent link="base_link"/>
-    <child link="lidar_ouster"/>
+    <child link="os_sensor"/>
     <origin xyz="0.0 0.68 1.8" rpy="0.15 0.2 0.55"/>
   </joint>
 

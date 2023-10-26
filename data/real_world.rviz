@@ -518,7 +518,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /lidar/fused
+        Value: /lidar
       Use Fixed Frame: true
       Use rainbow: false
       Value: true

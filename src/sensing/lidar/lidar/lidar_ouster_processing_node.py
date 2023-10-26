@@ -36,8 +36,12 @@ class LidarOusterProcessingNode(Node):
         self.clock = 0.0
         self.clock_msg = Clock()
         
+        qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.BEST_EFFORT, 
+                                          history = rclpy.qos.HistoryPolicy.KEEP_LAST,
+                                          depth=1)
+
         self.ouster_lidar_sub = self.create_subscription(
-            PointCloud2, '/ouster/points', self.lidarCb, 10)
+            PointCloud2, '/ouster/points', self.lidarCb, qos_policy)
 
         self.clock_sub = self.create_subscription(
             Clock, '/clock', self.clockCb, 10
@@ -57,7 +61,7 @@ class LidarOusterProcessingNode(Node):
 
     def lidarCb(self, msg: PointCloud2):
         self.pcd_cached: np.array = rnp.numpify(msg)
-        self.pcd_cached = self.transformToBaseLink(self.pcd_cached, 'lidar_ouster')
+        self.pcd_cached = self.transformToBaseLink(self.pcd_cached, 'os_lidar')
 
         # merged_x = np.append(
         #     self.left_pcd_cached['x'], self.right_pcd_cached['x'])
@@ -116,9 +120,9 @@ class LidarOusterProcessingNode(Node):
         r: R = R.from_quat([quat.x, quat.y, quat.z, quat.w])
         xyz = r.apply(xyz)
 
-        pcd['x'] = xyz[:,0].reshape(-1,128)
-        pcd['y'] = xyz[:,1].reshape(-1,128)
-        pcd['z'] = xyz[:,2].reshape(-1,128)
+        pcd['x'] = xyz[:,0].reshape(128,-1)
+        pcd['y'] = xyz[:,1].reshape(128,-1)
+        pcd['z'] = xyz[:,2].reshape(128,-1)
 
         # Then translate
         pcd['x'] += t.transform.translation.x
@@ -181,7 +185,7 @@ class LidarOusterProcessingNode(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    lidar_processor = DualLidarProcessingNode()
+    lidar_processor = LidarOusterProcessingNode()
 
     rclpy.spin(lidar_processor)
 
