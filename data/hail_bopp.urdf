@@ -135,7 +135,7 @@
  <joint name="lidar_ouster_joint" type="fixed">
     <parent link="base_link"/>
     <child link="os_sensor"/>
-    <origin xyz="0.0 0.68 1.8" rpy="0.15 0.2 0.55"/>
+    <origin xyz="0.0 0.58 1.8" rpy="0.0 0.2 0.0"/>
   </joint>
 
   <link name="radar"/>

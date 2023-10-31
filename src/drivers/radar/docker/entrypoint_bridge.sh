@@ -12,6 +12,13 @@ export ROS2_INSTALL_PATH="/opt/ros2_humble/install"
 echo "👍 Finished environment setup."
 echo ""
 
+echo ""
+echo "====================================================================="
+echo "🚀 To launch the ROS1-ROS2 Bridge: "
+echo " ./run_bridge.bash"
+echo "====================================================================="
+echo ""
+
 if [ -z ${@+x} ]; then
     exec bash
 else 

@@ -5,7 +5,7 @@ services:
         privileged: true
         stdin_open: true
         tty: true
-        runtime: nvidia
+        #runtime: nvidia
 
         image: delphi_esr
         container_name: delphi_esr_${USER}
@@ -18,8 +18,8 @@ services:
           # hack to help to share the modprobe kernel tools with the container:
           # https://stackoverflow.com/questions/67807039/how-to-install-linux-modules-extras-in-a-ubuntu-18-04-docker-image
           - type: bind
-            source: /lib/modules/5.15.0-79-generic #5.19.0-41-generic
-            target: /lib/modules/5.15.0-79-generic
+            source: /lib/modules/5.15.0-43-generic #5.15.0-79-generic #5.19.0-41-generic
+            target: /lib/modules/5.15.0-43-generic
           - type: bind
             source: ${HOME}/.Xauthority
             target: /root/.Xauthority
@@ -59,7 +59,7 @@ services:
         privileged: true
         stdin_open: true
         tty: true
-        runtime: nvidia
+        #runtime: nvidia
 
         image: delphi_esr_bridge
         container_name: delphi_esr_bridge_${USER}

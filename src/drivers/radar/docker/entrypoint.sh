@@ -7,6 +7,7 @@ echo "👍 Finished environment setup."
 echo ""
 
 echo "🥫 Don't forget to set up the can interface (on the host system)!"
+echo "  ./setup_can.sh"
 
 echo ""
 echo "====================================================================="

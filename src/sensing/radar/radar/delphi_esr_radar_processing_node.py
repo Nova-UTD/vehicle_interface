@@ -19,7 +19,7 @@ from scipy.spatial.transform import Rotation as R
 from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import OccupancyGrid
 from delphi_esr_msgs.msg import EsrTrack, EsrTrackMotionPowerTrack, EsrTrackMotionPowerGroup
-from nova_msgs.msg import RadarSpotlight
+from navigator_msgs.msg import RadarSpotlight
 from visualization_msgs.msg import Marker, MarkerArray
 from builtin_interfaces.msg import Duration
 from rclpy.node import Node
