@@ -2,7 +2,7 @@ import can
 from can.bus import BusState
 import math
 
-from carla_msgs.msg import CarlaEgoVehicleControl
+from navigator_msgs.msg import VehicleControl
 from diagnostic_msgs.msg import DiagnosticStatus, KeyValue
 from nova_msgs.msg import Mode
 from rosgraph_msgs.msg import Clock
@@ -41,7 +41,7 @@ class EpasNode(Node):
         # except can.exceptions.CanInitializationError:
 
         self.command_sub = self.create_subscription(
-            CarlaEgoVehicleControl, '/carla/hero/vehicle_control_cmd', self.commandCb, 1)
+            VehicleControl, '/vehicle/control', self.commandCb, 1)
         self.cmd_msg = None
         self.cmd_timer = self.create_timer(.01, self.vehicleControlCb)
         self.current_angle = 0.0
@@ -101,7 +101,7 @@ class EpasNode(Node):
     def clockCb(self, msg: Clock):
         self.clock = msg.clock
 
-    def commandCb(self, msg: CarlaEgoVehicleControl):
+    def commandCb(self, msg: VehicleControl):
         self.cmd_msg = msg
 
     def parseIncomingMessages(self, msg1_data: bytearray, msg2_data: bytearray) -> EpasState:

@@ -4,7 +4,7 @@ Filename:  linear_actuator_node.py
 Author:    Will Heitman (w at heit.mn)
 
 Subscribes to:
-- /carla/hero/vehicle_control_cmd (CarlaEgoVehicleControl)
+- /vehicle/control (VehicleControl)
 - /guardian/mode (nova_msgs/msg/Mode)
 
 Sends the appropriate brake data to the LA
@@ -22,7 +22,7 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 
 # Message definitions
-from carla_msgs.msg import CarlaEgoVehicleControl
+from navigator_msgs.msg import VehicleControl
 from diagnostic_msgs.msg import DiagnosticStatus, KeyValue
 from nova_msgs.msg import Mode
 from rosgraph_msgs.msg import Clock
@@ -43,7 +43,7 @@ class linear_actuator_node(Node):
         self.bus = None
 
         self.vehicle_command_sub = self.create_subscription(
-            CarlaEgoVehicleControl, '/carla/hero/vehicle_control_cmd', self.sendBrakeControl, 10)
+            VehicleControl, '/vehicle/control', self.sendBrakeControl, 10)
 
         self.status = DiagnosticStatus()
         self.status_pub = self.create_publisher(
@@ -114,7 +114,7 @@ class linear_actuator_node(Node):
     def currentModeCb(self, msg: Mode):
         self.current_mode = msg.mode
 
-    def sendBrakeControl(self, msg: CarlaEgoVehicleControl):
+    def sendBrakeControl(self, msg: VehicleControl):
         # self.get_logger().info('Printing self.brake in sendBrakeControl')
         # self.get_logger().info(str(msg.brake))
         if self.bus is None:

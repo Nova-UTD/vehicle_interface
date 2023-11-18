@@ -3,7 +3,7 @@ Package:   mcu_interface
 Filename:  mcu_interface_node.py
 Author:    Jai Peris 
 
-Subscribes to CarlaEgoVehicleControl messages (https://github.com/carla-simulator/ros-carla-msgs/blob/leaderboard-2.0/msg/CarlaEgoVehicleControl.msg)
+Subscribes to VehicleControl messages (https://github.com/carla-simulator/ros-carla-msgs/blob/leaderboard-2.0/msg/VehicleControl.msg)
 
 Sends the appropriate brake data to the LA
 '''
@@ -15,7 +15,7 @@ import io
 
 import serial
 import rclpy
-from carla_msgs.msg import CarlaEgoVehicleControl
+from carla_msgs.msg import VehicleControl
 from nova_msgs.msg import Mode
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
@@ -33,7 +33,7 @@ class McuInterfaceNode(Node):
         self.last_command_rcv_time = None
 
         self.vehicle_command_sub = self.create_subscription(
-            CarlaEgoVehicleControl, '/carla/hero/vehicle_control_cmd', self.commandCb, 1)
+            VehicleControl, '/vehicle/control', self.commandCb, 1)
 
         self.brake = 0.0  # 0.0 is released, 1.0 is fully pressed
         self.bus: serial.Serial = bus
@@ -53,7 +53,7 @@ class McuInterfaceNode(Node):
         self.vehicle_command_timer = self.create_timer(0.1, self.publishCommand)
         self.throttle = 0
 
-    def commandCb(self, msg: CarlaEgoVehicleControl):
+    def commandCb(self, msg: VehicleControl):
         self.throttle = msg.throttle
         print(f"Joystick Throttle: {self.throttle}\n")
 
