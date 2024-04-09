@@ -56,7 +56,7 @@ class EpasNode(Node):
         self.status_pub = self.create_publisher(
             DiagnosticStatus, '/node_statuses', 1)
         
-        # self.current_angle_pub = self.create_publisher(Float32, )
+        self.current_angle_pub = self.create_publisher(Float32, '/epas/current_angle', 10)
 
         self.clock = Clock().clock
         self.clock_sub = self.create_subscription(
@@ -199,12 +199,17 @@ class EpasNode(Node):
             msg2 = response_msg.data
             current_state = self.parseIncomingMessages(msg1, msg2)
             self.current_angle = current_state.angle
+            self.publish_current_angle() # Publishes current angle
 
         if self.current_mode == Mode.MANUAL or \
                 self.current_mode == Mode.AUTO:
             self.sendCommand(self.target_angle, self.bus)
         self.status_pub.publish(self.status)
 
+    def publish_current_angle(self):
+        angle_msg = Float32()
+        angle_msg.data = ((self.current_angle-self.limit_left)/(self.limit_right-self.limit_left)*2)-1 # Normalized angle [-1, 1]
+        self.angle_pub.publish(angle_msg)
 
 def main(args=None):
     rclpy.init(args=args)
