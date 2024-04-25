@@ -15,8 +15,7 @@ import io
 
 import serial
 import rclpy
-from carla_msgs.msg import VehicleControl
-from nova_msgs.msg import Mode
+from navigator_msgs.msg import VehicleControl, Mode
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 
@@ -82,9 +81,11 @@ class McuInterfaceNode(Node):
 
         # self.sio.write(f"$throttle,{throttle};\n")
 
-        response = self.sio.readline()
-        # self.get_logger().info(response)
-        # self.sio.flush()
+        # while True:
+        #     response = self.sio.readline()
+        #     self.get_logger().info(response)
+        #     if response == "": break
+        #     self.sio.flush()
     
 
 def main(args=None):
