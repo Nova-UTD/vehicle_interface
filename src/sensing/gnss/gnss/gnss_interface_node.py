@@ -115,8 +115,14 @@ class GnssInterfaceNode(Node):
 
         for i in range(30):
             try:
-                line = self.sio.readline()
+                # fix: https://github.com/microsoft/IoT-For-Beginners/issues/354#issuecomment-1010263999
+                try:
+                    line = self.sio.readline()
+                except UnicodeDecodeError:
+                    line = self.sio.readline()
                 msg = pynmea2.parse(line)
+
+                # self.get_logger().info(line)
 
                 if msg.sentence_type == "GGA":
                     # self.get_logger().warning("GGA!")
@@ -242,16 +248,16 @@ class GnssInterfaceNode(Node):
 
         try:
             self.bus = serial.Serial(
-                '/dev/serial/by-path/pci-0000:00:14.0-usb-0:1.2.1:1.0', 115200, timeout=0.05)
+                '/dev/serial/by-path/pci-0000:00:14.0-usb-0:2.4.4.1:1.0', 115200, timeout=0.05)
             self.sio = io.TextIOWrapper(io.BufferedRWPair(self.bus, self.bus))
             self.get_logger().info("Connected to GNSS")
 
-            # # Sends configuration on intialization so output is 10hz
-            # byte_data = bytes.fromHex(RAM_CONFIG_STRING.replace(" ", ""))
-            # self.bus.write(byte_data) # SEND CONFIG TO RAM LAYER
-            # byte_data = bytes.fromHex(BBR_CONFIG_STRING.replace(" ", ""))
-            # self.bus.write(byte_data) # SEND CONFIG TO BBR LAYER         
-            # self.get_logger().info("Configuration sent!")
+            # Sends configuration on intialization so output is 10hz
+            byte_data = bytes.fromhex(RAM_CONFIG_STRING.replace(" ", ""))
+            self.bus.write(byte_data) # SEND CONFIG TO RAM LAYER
+            byte_data = bytes.fromhex(BBR_CONFIG_STRING.replace(" ", ""))
+            self.bus.write(byte_data) # SEND CONFIG TO BBR LAYER         
+            self.get_logger().info("Configuration sent!")
 
         except serial.SerialException as e:
             self.get_logger().error(str(e))
