@@ -22,9 +22,8 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 
 # Message definitions
-from navigator_msgs.msg import VehicleControl
+from navigator_msgs.msg import VehicleControl, Mode
 from diagnostic_msgs.msg import DiagnosticStatus, KeyValue
-from nova_msgs.msg import Mode
 from rosgraph_msgs.msg import Clock
 
 
@@ -96,7 +95,7 @@ class linear_actuator_node(Node):
             self.status = self.initStatusMsg()
             self.status.level = DiagnosticStatus.ERROR
             self.status.message = "Connecting to LA."
-            channel = '/dev/serial/by-id/usb-OnLogic_K800_eMCU_50010066514151D2-if02'
+            channel = '/dev/serial/by-id/usb-OnLogic_K800_eMCU_500100F0334661D2-if02'
             bitrate = 250000
             self.bus = can.interface.Bus(
                 bustype='slcan', channel=channel, bitrate=bitrate, )
@@ -212,8 +211,8 @@ class linear_actuator_node(Node):
             self.get_logger().warn("Bus not yet set.")
             return
 
-        POSITION_MAX = 3.45
-        POSITION_MIN = 0.80
+        POSITION_MAX = 4.45
+        POSITION_MIN = 1.75
         range = POSITION_MAX - POSITION_MIN
         pos_inches = pos * range + POSITION_MIN
 
@@ -237,11 +236,17 @@ class linear_actuator_node(Node):
         try:
             bus.send(message)
             print("Sending message!")
+            # self.get_logger().info("Sending message!")
             msg = bus.recv(0.1)
             print(f"Got response {msg}")
+            # self.get_logger().info(f"Got response {msg}")
+
+
         except can.exceptions.CanError as e:
             self.status.level = DiagnosticStatus.ERROR
             self.status.message = "LA failed to send command: {e}."
+            self.get_logger().info(f"LA failed to send command: {e}.")
+
 
         self.status_pub.publish(self.status)
 
@@ -261,6 +266,7 @@ def main(args=None):
     linear_actuator_node.disableClutch()
     linear_actuator_node.destroy_node()
     rclpy.shutdown()
+    LAN.bus.shutdown()
 
 
 if __name__ == '__main__':
