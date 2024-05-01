@@ -18,3 +18,8 @@ data/maps/grand_loop/grand_loop_medium.pcd
 trace*
 
 rosbag2*
+
+# Ouster lidar creates a metadata file named
+# <ip>-metadata.json where <ip> is the IP of the ethernet
+# port.
+*-metadata.json
