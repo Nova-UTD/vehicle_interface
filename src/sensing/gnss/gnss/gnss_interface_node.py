@@ -247,10 +247,10 @@ class GnssInterfaceNode(Node):
         self.get_logger().info("Trying to connect to GNSS")
 
         try:
-            self.bus = serial.Serial(
-                '/dev/serial/by-path/pci-0000:00:14.0-usb-0:2.4.4.1:1.0', 115200, timeout=0.05)
+            channel = '/dev/serial/by-path/pci-0000:00:14.0-usb-0:2.3.1:1.0'
+            self.bus = serial.Serial(channel, 115200, timeout=0.05)
             self.sio = io.TextIOWrapper(io.BufferedRWPair(self.bus, self.bus))
-            self.get_logger().info("Connected to GNSS")
+            self.get_logger().info(f"Connected to GNSS via: {channel}")
 
             # Sends configuration on intialization so output is 10hz
             byte_data = bytes.fromhex(RAM_CONFIG_STRING.replace(" ", ""))
