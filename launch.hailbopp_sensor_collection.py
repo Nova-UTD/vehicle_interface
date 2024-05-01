@@ -30,7 +30,7 @@ def generate_launch_description():
 
         # SENSOR INTERFACE
         #camera,
-        # gnss,
+        gnss,
         lidar_ouster_driver, 
         sensor_configure_event, 
         sensor_activate_event, 
