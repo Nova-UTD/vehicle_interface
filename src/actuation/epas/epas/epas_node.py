@@ -1,3 +1,9 @@
+"""
+ROS2 node for EPAS interface.
+
+PID in EPAS is entirely experimental and values are subject to change during vehicle testing.
+"""
+
 import can
 from can.bus import BusState
 import math
@@ -27,23 +33,27 @@ class EpasNode(Node):
     def __init__(self):
         super().__init__('epas_node')
 
-        self.limit_left: int = 19
-        self.limit_right: int = 230
+        # These limits are torque bounds for values sent to the EPAS motor.
+        # If steering wheel hits one end and bounces back, then it means you need to tighten the bounds.
+        # In theory, these torque bounds should be from [0, 255]. 
+        # They were originally 19 and 230,respectively, before we changed them to -11 and 255 during testing.
+        # Feel free to change these values experimentally.
+        self.limit_left: int = -11
+        self.limit_right: int = 255
 
         self.bus = None
 
-        self.past_errors = np.zeros(5)
-
-        # try:
-        #     self.bus = can.interface.Bus(
-        #         bustype='slcan', channel='/dev/serial/by-id/usb-Protofusion_Labs_CANable_1205aa6_https:__github.com_normaldotcom_cantact-fw_001500174E50430520303838-if00', bitrate=500000, receive_own_messages=True)
-        # except can.exceptions.CanInitializationError:
+        # The number of past errors that the integral term will consider.
+        self.past_errors = np.zeros(10)
 
         self.command_sub = self.create_subscription(
             VehicleControl, '/vehicle/control', self.commandCb, 1)
         self.cmd_msg = None
         self.cmd_timer = self.create_timer(.01, self.vehicleControlCb)
         self.current_angle = 0.0
+
+        # The previous normalized angle needed to calculate the derivative term for PID.
+        self.prev_angle_normalized = 0.0
 
         self.clock = Clock().clock
         self.clock_sub = self.create_subscription(
@@ -71,9 +81,11 @@ class EpasNode(Node):
         self.bus: can.interface.Bus
         if self.bus is not None and self.bus.state == can.bus.BusState.ACTIVE:
             return
+        channel='/dev/serial/by-id/usb-Protofusion_Labs_CANable_1205aa6_https:__github.com_normaldotcom_cantact-fw_001500174E50430520303838-if00'
         try:
             self.bus = can.interface.Bus(
-                bustype='slcan', channel='/dev/serial/by-id/usb-Protofusion_Labs_CANable_1205aa6_https:__github.com_normaldotcom_cantact-fw_001500174E50430520303838-if00', bitrate=500000, receive_own_messages=True)
+                bustype='slcan', channel=channel, bitrate=500000, receive_own_messages=True)
+            self.get_logger().info(f"EPAS connected to CAN bus on {channel}")
         except can.exceptions.CanInitializationError as e:
             self.status.level = DiagnosticStatus.ERROR
             self.status.message = f"EPAS failed to connect to bus. {e}"
@@ -130,25 +142,32 @@ class EpasNode(Node):
     def sendCommand(self, target, bus):
         current_angle_normalized = (
             (self.current_angle-self.limit_left)/(self.limit_right-self.limit_left)*2)-1
-        # self.get_logger().info('current angle'+str(current_angle_normalized))
         e = target - current_angle_normalized  # Error = target - current
-        # self.get_logger().info('current_angle_normalized: '+str(current_angle_normalized))
-        # self.get_logger().info('target: '+str(target))
 
-        # We need to map [-1.0, 1.0] to [0, 255
-        
-        # Append new incoming error
-        np.roll(self.past_errors, -1)
-        self.past_errors[-1] = e
-        
+        # Integral and derivative term are HIGHLY INCOMPLETE/EXPERIMENTAL.
+        # Last changed during Spring'24 testing where we were unable to get steering to work with 
+        # PID epas, RTP planning, and a Pure Pursuit Controller.
+        Kp = 1.0
+        Ki = 0.0
+        Kd = 0.0
 
-        Kp = .4
-        Ki = .68
+        # P
+        proportional_term = e * Kp
 
-        INTEGRAL_CAP = .08
+        # D
+        derivative_term = (current_angle_normalized - self.prev_angle_normalized) * Kd
+        self.prev_angle_normalized = current_angle_normalized
+
+        INTEGRAL_CAP = .3
         TORQUE_LIMIT = 200
 
-        integral_term = np.sum(self.past_errors) * Ki
+        # Shift past errors to the left and replace the last value.
+        self.past_errors = np.roll(self.past_errors, -1)
+        self.past_errors[-1] = e
+
+        # I
+        past_error_sum = np.sum(self.past_errors)
+        integral_term = past_error_sum * Ki
 
         if(integral_term > INTEGRAL_CAP):
             integral_term = INTEGRAL_CAP
@@ -156,17 +175,16 @@ class EpasNode(Node):
             integral_term = -1 * INTEGRAL_CAP
 
         # Power is an abstract value from [-1., 1.], where -1 is hard push left
-        power = e * Kp + integral_term
+        power = proportional_term + integral_term - derivative_term
 
         torqueA: int = min(TORQUE_LIMIT, max(0, math.ceil((power+1) * (255/2))))
         torqueB: int = 255-torqueA
-        # self.get_logger().info(str(torqueA))
 
         data = [0x03, torqueA, torqueB, 0x00, 0x00, 0x00, 0x00, 0x00]
         message = can.Message(arbitration_id=0x296, data=data,
                               check=True, is_extended_id=False)
         bus.send(message, timeout=0.2)
-
+    
     def vehicleControlCb(self):
         self.status = self.initStatusMsg()
 
