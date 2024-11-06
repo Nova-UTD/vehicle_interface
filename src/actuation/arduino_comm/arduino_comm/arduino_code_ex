@@ -1,0 +1,21 @@
+#include <Arduino.h>
+#include <Servo.h>
+
+Servo myServo;
+
+void setup() {
+  Serial.begin(9600);       // Initialize serial communication
+  myServo.attach(9);        // Attach servo to pin 9 (adjust as needed)
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    String command = Serial.readStringUntil('\n');  // Read until newline
+    if (command.startsWith("SERVO:")) {
+      int angle = command.substring(6).toInt();     // Extract angle
+      myServo.write(angle);                         // Set servo angle
+      Serial.print("Turning servo to angle: ");
+      Serial.println(angle);
+    }
+  }
+}
