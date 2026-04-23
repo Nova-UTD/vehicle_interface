@@ -1,0 +1,101 @@
+# Copyright (c) 2021, s.m.s, smart microwave sensors GmbH, Brunswick, Germany
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: "3"
+services:
+    build_simulator: 
+        image: umrr-ros:${ROS_DISTRO:-foxy}
+        volumes:
+            - .:/code
+        entrypoint: ["/code/simulator/simulation/build_simulator.sh"]
+    sensor_0:
+        depends_on:
+            build_simulator:
+                condition: service_completed_successfully
+        image: umrr-ros:${ROS_DISTRO:-foxy}
+        volumes:
+            - .:/code
+        environment:
+            - SMART_ACCESS_CFG_FILE_PATH=/code/simulator/config_umrr11/com_lib_config.json
+            - LD_LIBRARY_PATH=/code/umrr_ros2_driver/smartmicro/lib-linux-x86_64-gcc_9
+        entrypoint: ["/code/simulator/simulation/out/bin/simulator"]
+        command:    ["4", "1", "1", "A"]
+        networks:
+            device_network:
+                ipv4_address: 172.22.10.101
+    sensor_1:
+        depends_on:
+            build_simulator:
+                condition: service_completed_successfully
+        image: umrr-ros:${ROS_DISTRO:-foxy}
+        volumes:
+            - .:/code
+        environment:
+            - SMART_ACCESS_CFG_FILE_PATH=/code/simulator/config_umrr96/com_lib_config.json
+            - LD_LIBRARY_PATH=/code/umrr_ros2_driver/smartmicro/lib-linux-x86_64-gcc_9
+        entrypoint: ["/code/simulator/simulation/out/bin/simulator"]
+        command:    ["5", "1", "2", "A"]
+        networks:
+            device_network:
+                ipv4_address: 172.22.10.102
+    sensor_2:
+        depends_on:
+            build_simulator:
+                condition: service_completed_successfully
+        image: umrr-ros:${ROS_DISTRO:-foxy}
+        volumes:
+            - .:/code
+        environment:
+            - SMART_ACCESS_CFG_FILE_PATH=/code/simulator/config_umrr9f/com_lib_config.json
+            - LD_LIBRARY_PATH=/code/umrr_ros2_driver/smartmicro/lib-linux-x86_64-gcc_9
+        entrypoint: ["/code/simulator/simulation/out/bin/simulator"]
+        command:    ["9", "2", "1", "C"]
+        networks:
+            device_network:
+                ipv4_address: 172.22.10.103
+    sensor_3:
+        depends_on:
+            build_simulator:
+                condition: service_completed_successfully
+        image: umrr-ros:${ROS_DISTRO:-foxy}
+        volumes:
+            - .:/code
+        environment:
+            - SMART_ACCESS_CFG_FILE_PATH=/code/simulator/config_umrr9d/com_lib_config.json
+            - LD_LIBRARY_PATH=/code/umrr_ros2_driver/smartmicro/lib-linux-x86_64-gcc_9
+        entrypoint: ["/code/simulator/simulation/out/bin/simulator"]
+        command:    ["11", "1", "5", "D"]
+        networks:
+            device_network:
+                ipv4_address: 172.22.10.104
+    ros_node:
+        image: umrr-ros:${ROS_DISTRO:-foxy}
+        depends_on:
+            - "sensor_0"
+            - "sensor_1"
+            - "sensor_2"
+            - "sensor_3"
+        volumes:
+            - .:/code
+        command: ["colcon", "test", "--packages-above", "umrr_ros2_driver"]
+        networks:
+            device_network:
+                ipv4_address: 172.22.10.100
+
+networks:
+  device_network:
+    ipam:
+        driver: default
+        config:
+            - subnet: 172.22.10.0/24
