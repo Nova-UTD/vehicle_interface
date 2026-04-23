@@ -30,6 +30,7 @@ def generate_launch_description():
         joystick_microsoft,
         # #camera,
         gnss,
+        radar,
         # Old lidar (left and right):
         # lidar_driver_left,
         # lidar_pointcloud_left,

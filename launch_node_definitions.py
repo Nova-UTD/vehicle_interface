@@ -29,6 +29,13 @@ clock = Node(
     executable='clock_node'
 )
 
+radar = Node(
+    package="umrr_ros2_driver",
+    executable="smartmicro_radar_node_exe",
+    name="smart_radar",
+    parameters=['/vehicle_interface/data/radar/radar.param.yaml'],
+)
+
 # I don't think we use this... maybe the old gps?
 # but we should keep it for broader vehicle interface...
 gps_node = Node(
